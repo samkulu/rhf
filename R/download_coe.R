@@ -75,6 +75,7 @@ download_coe_member <- function(dest = NA){
         # Export json text file
         writeLines(json, filename, useBytes = TRUE)
 
+
         # Export human readable table
         filename <- gsub("\\.json","\\.xlsx",filename)
         data <- read_json_coe(json)
