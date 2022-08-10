@@ -68,17 +68,36 @@ download_hcch <- function(dest = NA){
     fullname2 <- gsub(".xlsx",".rds",fullname)
 
     if(file.exists(fullname)) {
-      cat("current status \n")
+      cat("current status date \n")
       tmp <- readRDS(fullname2)
-      if(identical(tmp, tables[[1]]))
+      if(identical(tmp, tables[[1]])){
         cat("same table \n")
-      else
-        cat("check changes! \n")
+      } else {
+        cat("dodgy changes! \n")
+        diff <- dplyr::setdiff(tmp, tables[[1]])
+        dt <- Sys.Date()
+        filename <- paste(format(dt,"%Y%m%d_"),name,"_dodgy.xlsx", sep="")
+        fullname <- file.path(path, filename)
+        fullname2 <- gsub(".xlsx",".rds",fullname)
+
+        # Why Difference? Dodgy
+        data <- list(StatusTable = tables[[1]])
+        data$DIFF <- dplyr::setdiff(tmp, tables[[1]])
+        # Export
+        writexl::write_xlsx(data,  fullname)
+        saveRDS(tables[[1]], fullname2)
+      }
+
 
     } else {
+      # Difference obvious! New status date
+      data <- list(StatusTable = tables[[1]])
+      data$DIFF <- dplyr::setdiff(tmp, tables[[1]])
+
       # exportXLS(fullname, "StatusTable", tables[[1]])
       cat("changed table !\n")
-      writexl::write_xlsx(list(StatusTable = tables[[1]]),  fullname)
+      writexl::write_xlsx(data,  fullname)
+
       saveRDS(tables[[1]], fullname2)
     }
 

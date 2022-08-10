@@ -73,11 +73,16 @@ download_coe_member <- function(dest = NA){
         cat("exists \n")
       } else {
         # Export json text file
-        writeLines(json, filename)
+        writeLines(json, filename, useBytes = TRUE)
 
         # Export human readable table
         filename <- gsub("\\.json","\\.xlsx",filename)
         data <- read_json_coe(json)
+
+        # Difference
+        old <- read_json_coe(tmp)
+        data$diffMEMBER <- dplyr::setdiff(old$MEMBER, data$MEMBER)
+
         writexl::write_xlsx(data, filename)
 
         cat("saved \n")
