@@ -34,7 +34,8 @@ download_hcch <- function(dest = NA){
     name <- names(conv_hcch)[i]
     message(name)
     url <- gsub("%NUM%", conv_hcch[i],  link)
-    page <- suppressWarnings(readLines(url, encoding = "UTF-8"))
+    # page <- suppressWarnings(readLines(url, encoding = "UTF-8"))
+    page <- read_get(url, encoding = "UTF-8")
 
     path <- file.path(dest, name)
     if(!dir.exists(path)) dir.create(path)
@@ -42,9 +43,10 @@ download_hcch <- function(dest = NA){
     # Find Date
     # - Check Stuctrue
     # - Check result for Date Class
-    idx <- grep("Letzte Ergänzungen", page)
-    m <- regexpr("[0-9]{1,2}-[IXV]+-[0-9]{4}", page[idx + 1])
-    dt <- regmatches(page[idx + 1], m)
+    xx <- strsplit(page, split="\n")[[1]]
+    idx <- grep("Letzte Ergänzungen", xx)
+    m <- regexpr("[0-9]{1,2}-[IXV]+-[0-9]{4}", xx[idx + 1])
+    dt <- regmatches(xx[idx + 1], m)
     ss <- strsplit(dt, split="-")[[1]]
 
     if(length(ss) != 3) browser()
@@ -92,7 +94,10 @@ download_hcch <- function(dest = NA){
     } else {
       # Difference obvious! New status date
       data <- list(StatusTable = tables[[1]])
+      tmp <- list.files(dirname(fullname2), "\\.rds", full.names = TRUE) %>%
+              last() %>% readRDS()
       data$DIFF <- dplyr::setdiff(tmp, tables[[1]])
+      data$NEW <- dplyr::setdiff(tables[[1]], tmp)
 
       # exportXLS(fullname, "StatusTable", tables[[1]])
       cat("changed table !\n")
