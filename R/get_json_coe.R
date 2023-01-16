@@ -15,7 +15,8 @@ get_json_coe <- function(treatynum = NA,
 
   # Find KEY
   url <- gsub("%treatynum%", treatynum, link)
-  page <- readLines(url, encoding = "UTF-8")
+  # page <- readLines(url, encoding = "UTF-8")
+  page <- read_get(url, encoding = "UTF-8")
 
   # RESPONSE
   # ...
@@ -25,7 +26,9 @@ get_json_coe <- function(treatynum = NA,
   # </script>
 
   # Get TOKEN
-  api_key <- page[grep("window.conventions_api_key=", page)]
+  ss <- strsplit(page, split="\n")[[1]]
+  api_key <- ss[grep("window.conventions_api_key=", ss)]
+  api_key <- gsub("\"", "'", api_key)
   key <- strsplit(api_key, split="'")[[1]][2]
 
 
@@ -79,6 +82,7 @@ get_json_coe <- function(treatynum = NA,
                     `Sec-Fetch-Site` = "same-site",
                     `Sec-GPC` = "1"
   )
+
 
   # UBUNTU Workaround
   # Solving httr, cURL, and SSL problems on Ubuntu 20.04
