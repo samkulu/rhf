@@ -14,7 +14,6 @@ conv_coe <- c(EUeR = "030",
           EueZ94 = "094"
 )
 
-
 #' Download COE's MEMBER's Status Tables
 #'
 #' This pkg is used for downloading the status tables from the member states
@@ -25,6 +24,12 @@ conv_coe <- c(EUeR = "030",
 #'
 #'  https://rhf.admin.ch/ > Länderindex
 #'
+#' Full list: https://www.coe.int/en/web/conventions/full-list
+#' Details of Treaty No.030
+#' https://www.coe.int/en/web/conventions/full-list?module=treaty-detail&treatynum=030
+#'
+#' Chart of signatures and ratifications of Treaty 030
+#' https://www.coe.int/en/web/conventions/full-list?module=signatures-by-treaty&treatynum=030
 #'
 #' @return
 #' @export
@@ -58,6 +63,7 @@ download_coe_member <- function(dest = NA){
 
     # Check for changes
     tmp <- readLines(fls[1], encoding = "UTF-8")
+
     if(identical(tmp,json)) {
       # Same Json file/data
       cat("same \n")
@@ -82,7 +88,8 @@ download_coe_member <- function(dest = NA){
 
         # Difference
         old <- read_json_coe(tmp)
-        data$diffMEMBER <- dplyr::setdiff(old$MEMBER, data$MEMBER)
+        data$DIFF <- dplyr::setdiff(old$MEMBER, data$MEMBER)
+        data$NEW <- dplyr::setdiff(data$MEMBER, old$MEMBER)
 
         writexl::write_xlsx(data, filename)
 
