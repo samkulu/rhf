@@ -37,26 +37,29 @@ download_treatydatabase_nl <- function(dest = NA){
     url <- gsub("%NUM%",conv[i], link)
     urlRepo <-  gsub("%NUM%",conv[i], repo)
 
-    page <- suppressWarnings(readLines(url, encoding = "UTF-8"))
+    # Download XML Repository
+    # e.g. "https://repository.overheid.nl/frbr/vd/005234/1/xml-en/005234.xml"
+    xml_file <- xml2::read_xml(urlRepo)
 
     # XML Details
     # Why ? For tracking changes
-    pageRepo <- suppressWarnings(readLines(urlRepo, encoding = "UTF-8"))
-    ss <- pageRepo[grep("dcterms:modified", pageRepo)]
-    m <- gregexpr("20[0-9]{2}\\-[0-9]{2}\\-[0-9]{2}", ss)
-    dt <- regmatches(ss, m)[[1]]
+    modified_dates <- xml2::xml_find_all(xml_file, "//dcterms:modified")
+    dt <- xml2::xml_text(modified_dates[[1]])
+
     fi <- file.path(dest, name, paste(dt,"_",name, "_Notifications.xml", sep=""))
 
     if(!file.exists(fi))
-      writeLines(pageRepo, fi, useBytes = TRUE)
+      xml2::write_xml(xml_file, fi)
 
 
+    # Find all HTML links in XML file and extract URLs
+    xml_inventory <- xml2::xml_find_all(xml_file, "//Bestandsnaam")
+    fls_new <-  xml2::xml_text(xml_inventory)
+    lnks <- paste0("https://repository.overheid.nl/frbr/vd/",
+                   conv[i], "/1/pdf/", fls_new)
 
-    # THERE ARE ONLY LINKS !
-    # tables <- readHTMLTable(page) # NOTHING
-    lnks <- getHTMLLinks(page)
-    lnks <- lnks[grepl("Notific", lnks)]
 
+    # Check Existing Files
     fls <- list.files(file.path(dest, name), full.names = TRUE)
     if(all(basename(lnks) %in% basename(fls))) {
       cat("complete \n")
