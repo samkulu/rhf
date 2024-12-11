@@ -64,6 +64,9 @@ download_hcch <- function(dest = NA){
     if(length(tables) < 1)
       return(NULL)
 
+    # New Workaround for Tabs
+    tables[[1]][,8] <- gsub("\t\t\t\t","",tables[[1]][,8])
+
     # Output to File(s) rds and xlsx
     filename <- paste(format(dt,"%Y%m%d_"),name,".xlsx", sep="")
     fullname <- file.path(path, filename)
